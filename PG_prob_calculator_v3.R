@@ -4,7 +4,7 @@ library(stringr)
 library(dplyr)
 library(data.table)
 
-forR_input <- read_csv("Dropbox/Bob/Projects/PG GP mapping/making new PG odds/data_for_computing_odds/forR_input.csv",col_types = cols(.default = "c")) #CRITICAL: read all columns as characters, or "t"'s may be read as TRUE!
+forR_input <- read_csv("forR_input.csv",col_types = cols(.default = "c")) #CRITICAL: read all columns as characters, or "t"'s may be read as TRUE!
 forR_input <- mutate_all(forR_input,.funs=tolower)
 
 #if there are non-linear mappings for E to schwa, as in ABLE (the written order is L-E but the phonological order is E-L)
