@@ -9,6 +9,7 @@ output: html_document
 ########AOA MEASURES#########
 ##############################
 
+
 library(readxl)
 AoA_measures <- read_xlsx("AoA_measures.xlsx", sheet = "Sheet2") # read in all AoA measures
 
@@ -28,7 +29,7 @@ AoA_data <- cbind(AoA_measures$WORD, AoA_measures$MEANING, age_bins) # final AoA
 colnames(AoA_data) [1] <- "STRING"
 colnames(AoA_data) [2] <- "MEANING"
 AoA_data <- data.frame(AoA_data)
-write.csv(AoA_data, "aoa.csv")
+write.csv(AoA_data, "aoa.csv") # TODO REMOVE
 ```
 
 ```{r}
@@ -39,12 +40,12 @@ library(dplyr)
 library(data.table)
 
 forR_input <- read_csv("forR_input.csv",col_types = cols(.default = "c")) #CRITICAL: read all columns as characters, or "t"'s may be read as TRUE!
-vals <- c('(1,2]', '(2,3]', '(3,4]', '(4,5]', '(5,6]', '(6,7]', '(7,8]', '(8,9]', '(9,10]', '(10,11]', '(11,12]', '(12,13]', '(13,14]', '(14,15]', '(15,16]', '(16,17]') #add bin for every iteration of AoA
+vals <- c("(1,2]") # add bin for every iteration of AoA
+# , '(2,3]', '(3,4]', '(4,5]', '(5,6]', '(6,7]', '(7,8]', '(8,9]', '(9,10]', '(10,11]', '(11,12]', '(12,13]', '(13,14]', '(14,15]', '(15,16]', '(16,17]'s
 AoA <- filter(AoA_data, bin %in% vals)
-write.csv(AoA, "aoaoaoa.csv")
 forR_input <- merge(forR_input, AoA, by.x = 'STRING')
 forR_input <- mutate_all(forR_input,.funs=tolower)
-write.csv(forR_input, "fororor.csv")
+write.csv(forR_input, "forR_input_post_bins.csv") # TODO REMOVE
 #if there are non-linear mappings for E to schwa, as in ABLE (the written order is L-E but the phonological order is E-L)
 #myindices <- which(forR_input == "ə+_",arr.ind=T) #find where there are non-linear Es (as in "able")
 #for (i in 1:nrow(myindices)) {
