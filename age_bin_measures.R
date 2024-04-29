@@ -36,9 +36,161 @@ prepare_aoa_data <- function() {
     return(data.frame(AoA_data))
 }
 
-###
-# Global values used in main loop
-###
+# Computes wordinitial measures and outputs the results to csvs based on the bin.
+# Returns the accumulated wordinitial_acc to be stored.
+# Takes in information for the current bin as bin_data, along with accumulated data from all previous bins, and the lower bin index.
+compute_wordinitial_measures <- function(bin_data, wordinitial_df_acc, bin_index) {
+    # Empty list for the current bin data
+    wordinitial_list <- list()
+    wordinitial_list[[1]] <- matrix(c("P","G","totalPG"),ncol=3)
+
+    ## Word-initial for loop:
+    for(i in 1:length(bin_data$STRING)) {
+        wordinitial_temp <- t(matrix(
+            cbind(
+                colnames(bin_data)[c(2:19)][!is.na(bin_data[i, c(2:19)])],
+                bin_data[i, c(2:19)][!is.na(bin_data[i, c(2:19)])]
+            )[1:3, 2]
+        ))
+        wordinitial_list[[length(wordinitial_list) + 1]] <- wordinitial_temp
+    }
+
+    # Convert these contents to a data frame with the same columns as the accumulator
+    tdf <- do.call(rbind,wordinitial_list)
+    colnames(tdf) <- tdf[1,]
+    tdf <- as.data.frame(tdf[-1,])
+
+    # Add these contents to the accumulator for the age bins
+    wordinitial_df_acc <- rbind(wordinitial_df_acc, tdf)
+
+    # Copy the accumulated data
+    wordinitial_df <- wordinitial_df_acc
+    wordinitial_df$G <-str_extract(wordinitial_df$totalPG, '\\b\\w+$') #CRITICAL! this is needed to include the silent E's as part of the grapheme
+
+    # Compute proability tables
+    wordinitial_PG_prop <- prop.table(table(wordinitial_df$P,wordinitial_df$G),margin=1)
+
+    ##word initial G->P proportion table (note: will have many zero cells, but that can be removed later for ease of display)
+    wordinitial_GP_prop <- t(prop.table(table(wordinitial_df$P,wordinitial_df$G),margin=2))
+
+    ##word initial FREQ table (note: will have many zero cells, but that can be removed later for ease of display)
+    wordinitial_FREQ <- t(table(wordinitial_df$P,wordinitial_df$G))
+
+    # Output all of the word intial data to csv's
+    sbin_identifier <- paste0("tables/bin", bin_index, "_", bin_index + 1)
+    sbin_identifier_csv <- paste0(bin_index, "_", bin_index + 1, ".csv")
+
+    if (!dir.exists(sbin_identifier)) {
+        dir.create(sbin_identifier, recursive=TRUE)
+    }
+
+    write.csv(wordinitial_PG_prop, paste0(sbin_identifier, "/wordinitial_PG_prop", sbin_identifier_csv))
+    write.csv(wordinitial_GP_prop, paste0(sbin_identifier, "/wordinitial_GP_prop", sbin_identifier_csv))
+    write.csv(wordinitial_FREQ, paste0(sbin_identifier, "/wordinitial_FREQ", sbin_identifier_csv))
+
+    return(wordinitial_df_acc)
+}
+
+# Computes syllable initial measures and outputs the results to csvs based on the bin.
+# Returns the accumulated syllableinitial_acc to be stored.
+# Takes in information for the current bin as bin_data, along with accumulated data from all previous bins, and the lower bin index.
+compute_syllable_initial_measures <- function(bin_data, syllableinitial_df_acc, bin_index) {
+    # Empty list for current bin data
+    syllableinitial_list <- list()
+    syllableinitial_list[[1]] <- matrix(c("P","G","totalPG"),ncol=3)
+
+    # TODO its possible this loop can be sped up further
+    ##syllable-initial for loop for the SECOND through SIXTH syllables only!:
+    ##special note: must exclude WORD-FINAL mappings, they will be treated as word final even if they are also syllable-initial (e.g, the Y in joe-Y)
+
+    #create a new corpus where you turn into NA the final mappings from each word so they'll end up being excluded from the syllable-initial lists:
+    newcorpus <- bin_data
+
+    for( i in 1:nrow(newcorpus)){
+        mycols <-max.col(!is.na(newcorpus[i,]),ties.method="last")  #figure out which columns will be the final mappings
+        newcorpus[i,c((mycols-2):mycols)] <- "NA"
+    }
+
+    for(i in 1:length(newcorpus$STRING)){
+        #second syllable
+        syllableinitial_temp <- t(matrix(tryCatch(
+                                        cbind(colnames(newcorpus)[c(20:37)][!is.na(newcorpus[i,c(20:37)])],newcorpus[i,c(20:37)][!is.na(newcorpus[i,c(20:37)])])[1:3,2],
+                                        error=function(err) NA)))
+        syllableinitial_list[[length(syllableinitial_list)+1]] <- syllableinitial_temp
+        
+        #third syllable
+        syllableinitial_temp <- t(matrix(tryCatch(
+                                        cbind(colnames(newcorpus)[c(38:52)][!is.na(newcorpus[i,c(38:52)])],newcorpus[i,c(38:52)][!is.na(newcorpus[i,c(38:52)])])[1:3,2],
+                                        error=function(err) NA)))
+        syllableinitial_list[[length(syllableinitial_list)+1]] <- syllableinitial_temp
+        
+        #fourth syllable
+        syllableinitial_temp <- t(matrix(tryCatch(
+                                        cbind(colnames(newcorpus)[c(53:64)][!is.na(newcorpus[i,c(53:64)])],newcorpus[i,c(53:64)][!is.na(newcorpus[i,c(53:64)])])[1:3,2],
+                                        error=function(err) NA)))
+        syllableinitial_list[[length(syllableinitial_list)+1]] <- syllableinitial_temp
+        
+        #fifth syllable
+        syllableinitial_temp <- t(matrix(tryCatch(
+                                        cbind(colnames(newcorpus)[c(65:76)][!is.na(newcorpus[i,c(65:76)])],newcorpus[i,c(65:76)][!is.na(newcorpus[i,c(65:76)])])[1:3,2],
+                                        error=function(err) NA)))
+        syllableinitial_list[[length(syllableinitial_list)+1]] <- syllableinitial_temp
+        
+        #sixth syllable
+        syllableinitial_temp <- t(matrix(tryCatch(
+                                        cbind(colnames(newcorpus)[c(77:88)][!is.na(newcorpus[i,c(77:88)])],newcorpus[i,c(77:88)][!is.na(newcorpus[i,c(77:88)])])[1:3,2],
+                                        error=function(err) NA)))
+        syllableinitial_list[[length(syllableinitial_list)+1]] <- syllableinitial_temp
+    }
+
+    #replace empty matrices with NAs of 1x3 so that they can be bound with the non-empty matrices
+    for(i in 1:length(syllableinitial_list)){
+        ifelse(all(is.na(syllableinitial_list[[i]])),syllableinitial_list[[i]] <- matrix(NA,nrow=1,ncol=3),syllableinitial_list[[i]]<-syllableinitial_list[[i]])
+    }
+
+    tdf <- do.call(rbind, syllableinitial_list)
+    colnames(tdf) <- tdf[1,]
+    tdf <- as.data.frame(tdf[-1,])
+
+    # Add these contents to the accumulator for the age bins
+    syllableinitial_df_acc <- rbind(syllableinitial_df_acc, tdf)
+
+    # Create a copy
+    syllableinitial_df <- syllable_initial_df_acc
+    syllableinitial_df$G <-str_extract(syllableinitial_df$totalPG, '\\b\\w+$') #CRITICAL! this is needed to include the silent E's as part of the grapheme
+
+    # Create all probabilty tables and output them
+
+    ##syllable initial P->G proportion table (note: will have many zero cells, but that can be removed later for ease of display)
+    syllableinitial_PG_prop <- prop.table(table(syllableinitial_df$P,syllableinitial_df$G),margin=1)
+
+    ##syllable initial G->P proportion table (note: will have many zero cells, but that can be removed later for ease of display
+    syllableinitial_GP_prop <- t(prop.table(table(syllableinitial_df$P,syllableinitial_df$G),margin=2))
+
+    ##syllable initial FREQ table (note: will have many zero cells, but that can be removed later for ease of display)
+    syllableinitial_FREQ <- t(table(syllableinitial_df$P,syllableinitial_df$G))
+
+    # Output all of the word intial data to csv's
+    sbin_identifier <- paste0("tables/bin", bin_index, "_", bin_index + 1)
+    sbin_identifier_csv <- paste0(bin_index, "_", bin_index + 1, ".csv")
+
+    if (!dir.exists(sbin_identifier)) {
+        dir.create(sbin_identifier, recursive=TRUE)
+    }
+
+    write.csv(syllableinitial_PG_prop, paste0(sbin_identifier, "/syllableinitial_PG_prop", sbin_identifier_csv))
+    write.csv(syllablefinal_GP_prop, paste0(sbin_identifier, "/syllableinitial_GP_prop", sbin_identifier_csv))
+    write.csv(syllablefinal_FREQ, paste0(sbin_identifier, "/syllableinitial_FREQ", sbin_identifier_csv))
+
+    # Ultimately return the accumulor with the new data
+    return(syllableinitial_df_acc)
+}
+
+# Computes syllable and word final measures and outputs the results to csvs based on the bin.
+
+###################################
+# Global values used in main loop #
+###################################
 
 # Age-of-Acquisition data used for filtering
 AoA_data <- prepare_aoa_data()
@@ -54,25 +206,33 @@ vals <- c("(1,2]", "(2,3]", "(3,4]", "(4,5]", "(5,6]", "(6,7]", "(7,8]", "(8,9]"
 bin_index <- 1
 
 # Data frames: kept track of here as these are accumulated across the age bins
+
 # Word-initial data frame
-wordinitial_df <- data.frame(P = character(), G = character(), totalPG = character(), stringsAsFactors = FALSE) # accumulated at each iteration
+wordinitial_df_acc <- data.frame(P = character(), G = character(), totalPG = character(), stringsAsFactors = FALSE)
+# Syllable initial data frame
+syllable_initial_df_acc <- data.frame(P = character(), G = character(), totalPG = character(), stringsAsFactors = FALSE)
+# Syllable final data frame
+syllable_final_df_acc <- data.frame(P = character(), G = character(), totalPG = character(), stringsAsFactors = FALSE)
+# Word final data frame
+word_final_df_acc <- data.frame(P = character(), G = character(), totalPG = character(), stringsAsFactors = FALSE)
+
+
 
 for (b in vals) {
     print(b)
+    val <- b
 
     parent_folder <- paste("age_measures/bin", bin_index, "-", bin_index + 1, "/", sep="")
 
     # Filter to just the age bin interested in (highest bin) and all data from earlier bins
-    AoA <- filter(AoA_data, bin == b)
+    AoA <- filter(AoA_data, bin %in% val)
 
     # bin_data (previously forR_input) is filtered and marked based on the current age bin and the words in it
     bin_data <- merge(forR_input, AoA, by.x = 'STRING')
     bin_data <- mutate_all(bin_data,.funs=tolower)
-    # TODO remove this is used for debugging only, currently checking 
-    write.csv(bin_data, "bin_data_check.csv")
 
     # TODO wrap this into a function
-    # TODO needs fix 
+    # TODO remove?
     # Find indices where....
     # there are non-linear mappings for E to schwa, as in ABLE (the written order is L-E but the phonological order is E-L)...
     # there are non-linear mappings for E to ʌ (as in ONE, where O --> /w/, N--> /n/, and E --> ʌ but out of order)...
@@ -88,42 +248,44 @@ for (b in vals) {
     #     bin_data[indices[i, 1], indices[i, 2] - 1] <- "_"
     # }
 
-    ##############################
-    ####WORD-INITIAL MEASURES#####
-    ##############################
-    # Empty list for the current bin data
-    wordinitial_list <- list()
+    # Compute word initial measures and return the accumulated result
+    wordinitial_df_acc <- compute_wordinitial_measures(bin_data, wordinitial_df_acc, bin_index)
 
-    ##word-initial for loop:
-    for(i in 1:length(bin_data$STRING)){
-        print("in")
-        wordinitial_temp <- t(matrix(cbind(colnames(bin_data)[c(2:19)][!is.na(bin_data[i,c(2:19)])],bin_data[i,c(2:19)][!is.na(bin_data[i,c(2:19)])])[1:3,2]))
-        wordinitial_list[[length(wordinitial_list)+1]] <- wordinitial_temp
-        print("out")
-    }
-    print("out completely")
-    # Accumulate to the word initial data frame for the age bin
-    wordinitial_df <- rbind(do.call(rbind, wordinitial_list), wordinitial_df)
-    print("err before")
-    wordinitial_df$G <-str_extract(wordinitial_df$totalPG, '\\b\\w+$') #CRITICAL! this is needed to include the silent E's as part of the grapheme
-    print("err here?")
+    # Compute syllable initial measures and return the result
+    syllable_initial_df_acc <- compute_syllable_initial_measures(bin_data, syllableinitial_df_acc, bin_index)
 
-    # Now create all of the proportion tables and store these in the parent folder
-    wordinitial_PG_prop <- prop.table(table(wordinitial_df$P,wordinitial_df$G),margin=1)
-    print("or here")
-    wordinitial_GP_prop <- t(prop.table(table(wordinitial_df$P,wordinitial_df$G),margin=2))
-    print("or potentialy here")
-    wordinitial_FREQ <- t(table(wordinitial_df$P,wordinitial_df$G))
-    print("final check")
 
-    write.csv(wordinitial_PG_prop, file=paste(parent_folder, "wordinitial_PG.csv", sep=""))
-    write.csv(wordinitial_GP_prop, file=paste(parent_folder, "wordinitial_GP.csv", sep=""))
-    write.csv(wordinitial_FREQ_prop, file=paste(parent_folder, "wordinitial_FREQ.csv", sep=""))
 
+    ##################################
+    ####SYLLABLE-INITIAL MEASURES#####
+    ##################################
+
+    # Empty list for current bin data
+    syllableinitial_list <- list()
+    syllableinitial_list[[1]] <- matrix(c("P","G","totalPG"),ncol=3)
+
+    ##syllable-initial for loop for the SECOND through SIXTH syllables only!:
+    ##special note: must exclude WORD-FINAL mappings, they will be treated as word final even if they are also syllable-initial (e.g, the Y in joe-Y)
+
+    #create a new corpus where you turn into NA the final mappings from each word so they'll end up being excluded from the syllable-initial lists:
+
+
+    ###################################
+    ####EXAMPLES FROM ORIGINAL CODE####
+    ###################################
+
+    # #example of pulling out one P->G mapping odds (just replace the "i" with the IPA symbol for the desired sound#
+    # wordinitial_PG_prop[rownames(wordinitial_PG_prop)=="i",][wordinitial_PG_prop[rownames(wordinitial_PG_prop)=="i",]>0]
+
+    # #example of pulling out one G->P mapping odds (just replace the "c" with the desired graphemes#
+    # wordinitial_GP_prop[rownames(wordinitial_GP_prop)=="c",][wordinitial_GP_prop[rownames(wordinitial_GP_prop)=="c",]>0]
+
+    # #example of pulling out one P->G mapping odds (just replace the "i" with the IPA symbol for the desired sound#
+    # syllableinitial_PG_prop[rownames(syllableinitial_PG_prop)=="i",][syllableinitial_PG_prop[rownames(syllableinitial_PG_prop)=="i",]>0]
+
+    # #example of pulling out one G->P mapping odds (just replace the "c" with the desired graphemes#
+    # syllableinitial_GP_prop[rownames(syllableinitial_GP_prop)=="c",][syllableinitial_GP_prop[rownames(syllableinitial_GP_prop)=="c",]>0]
+    
+    # Increment index
     bin_index <- bin_index + 1
 }
-
-# NOTES
-# accumulated lists and data frames with every loop
-# update forR input each loop (used) to contain only for next bin; append/concat/what is done to current data
-# output all each iter 

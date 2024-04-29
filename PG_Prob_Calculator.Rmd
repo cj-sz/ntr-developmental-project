@@ -29,7 +29,6 @@ AoA_data <- cbind(AoA_measures$WORD, AoA_measures$MEANING, age_bins) # final AoA
 colnames(AoA_data) [1] <- "STRING"
 colnames(AoA_data) [2] <- "MEANING"
 AoA_data <- data.frame(AoA_data)
-write.csv(AoA_data, "aoa.csv") # TODO REMOVE
 ```
 
 ```{r}
