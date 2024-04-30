@@ -9,7 +9,6 @@ output: html_document
 ########AOA MEASURES#########
 ##############################
 
-
 library(readxl)
 AoA_measures <- read_xlsx("AoA_measures.xlsx", sheet = "Sheet2") # read in all AoA measures
 
@@ -39,29 +38,28 @@ library(dplyr)
 library(data.table)
 
 forR_input <- read_csv("forR_input.csv",col_types = cols(.default = "c")) #CRITICAL: read all columns as characters, or "t"'s may be read as TRUE!
-vals <- c("(1,2]", "(2,3]", "(3,4]") # add bin for every iteration of AoA
-# , '(2,3]', '(3,4]', '(4,5]', '(5,6]', '(6,7]', '(7,8]', '(8,9]', '(9,10]', '(10,11]', '(11,12]', '(12,13]', '(13,14]', '(14,15]', '(15,16]', '(16,17]'s
+vals <- c('(1,2]', '(2,3]', '(3,4]', '(4,5]', '(5,6]', '(6,7]', '(7,8]', '(8,9]', '(9,10]', '(10,11]', '(11,12]', '(12,13]', '(13,14]', '(14,15]', '(15,16]', '(16,17]') #add bin for every iteration of AoA
 AoA <- filter(AoA_data, bin %in% vals)
 forR_input <- merge(forR_input, AoA, by.x = 'STRING')
 forR_input <- mutate_all(forR_input,.funs=tolower)
-write.csv(forR_input, "forR_input_post_bins.csv") # TODO REMOVE
+
 #if there are non-linear mappings for E to schwa, as in ABLE (the written order is L-E but the phonological order is E-L)
 #myindices <- which(forR_input == "ə+_",arr.ind=T) #find where there are non-linear Es (as in "able")
-#for (i in 1:nrow(myindices)) {
-  #forR_input[myindices[i,1],myindices[i,2]-1] <- "_" #replace the blanks, which come from Excel, with an underscore, just as a placeholder...note that these need to go in the column to the left of the "ə+_" mappings
-#}
+for (i in 1:nrow(myindices)) {
+  forR_input[myindices[i,1],myindices[i,2]-1] <- "_" #replace the blanks, which come from Excel, with an underscore, just as a placeholder...note that these need to go in the column to the left of the "ə+_" mappings
+}
 
-#if there are non-linear mappings for E to ʌ (as in ONE, where O --> /w/, N--> /n/, and E --> ʌ but out of order):
-#myindices <- which(forR_input == "ʌ+_",arr.ind=T) #find where there are non-linear Es (as in "once")
-#for (i in 1:nrow(myindices)) {
-  #forR_input[myindices[i,1],myindices[i,2]-1] <- "_" #replace the blanks, which come from Excel, with an underscore, just as a placeholder...note that these need to go in the column to the left of the "ə+_" mappings
-#}
+# if there are non-linear mappings for E to ʌ (as in ONE, where O --> /w/, N--> /n/, and E --> ʌ but out of order):
+myindices <- which(forR_input == "ʌ+_",arr.ind=T) #find where there are non-linear Es (as in "once")
+for (i in 1:nrow(myindices)) {
+  forR_input[myindices[i,1],myindices[i,2]-1] <- "_" #replace the blanks, which come from Excel, with an underscore, just as a placeholder...note that these need to go in the column to the left of the "ə+_" mappings
+}
 
-#if there are non-linear mappings for E to rhotic (as in THEATRE):
-#myindices <- which(forR_input == "ɚ+_",arr.ind=T) #find where there are non-linear Es (as in "acquire")
-#for (i in 1:nrow(myindices)) {
-  #forR_input[myindices[i,1],myindices[i,2]-1] <- "_" #replace the blanks, which come from Excel, with an underscore, just as a placeholder...note that these need to go in the column to the left of the "ə+_" mappings
-#}
+# if there are non-linear mappings for E to rhotic (as in THEATRE):
+myindices <- which(forR_input == "ɚ+_",arr.ind=T) #find where there are non-linear Es (as in "acquire")
+for (i in 1:nrow(myindices)) {
+  forR_input[myindices[i,1],myindices[i,2]-1] <- "_" #replace the blanks, which come from Excel, with an underscore, just as a placeholder...note that these need to go in the column to the left of the "ə+_" mappings
+}
 
 #note: the syllables are mapped in these columns in the CSV:#
 #first syllable: [,c(2:19)]
