@@ -39,7 +39,7 @@ library(dplyr)
 library(data.table)
 
 forR_input <- read_csv("forR_input.csv",col_types = cols(.default = "c")) #CRITICAL: read all columns as characters, or "t"'s may be read as TRUE!
-vals <- c("(1,2]") # add bin for every iteration of AoA
+vals <- c("(1,2]", "(2,3]", "(3,4]") # add bin for every iteration of AoA
 # , '(2,3]', '(3,4]', '(4,5]', '(5,6]', '(6,7]', '(7,8]', '(8,9]', '(9,10]', '(10,11]', '(11,12]', '(12,13]', '(13,14]', '(14,15]', '(15,16]', '(16,17]'s
 AoA <- filter(AoA_data, bin %in% vals)
 forR_input <- merge(forR_input, AoA, by.x = 'STRING')

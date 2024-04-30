@@ -94,7 +94,7 @@ compute_wordinitial_measures <- function(bin_data, wordinitial_df_acc, bin_index
 # Computes syllable initial measures and outputs the results to csvs based on the bin.
 # Returns the accumulated syllableinitial_acc to be stored.
 # Takes in information for the current bin as bin_data, along with accumulated data from all previous bins, and the lower bin index.
-compute_syllable_initial_measures <- function(bin_data, syllableinitial_df_acc, bin_index) {
+compute_syllableinitial_measures <- function(bin_data, syllableinitial_df_acc, bin_index) {
     # Empty list for current bin data
     syllableinitial_list <- list()
     syllableinitial_list[[1]] <- matrix(c("P","G","totalPG"),ncol=3)
@@ -156,7 +156,7 @@ compute_syllable_initial_measures <- function(bin_data, syllableinitial_df_acc, 
     syllableinitial_df_acc <- rbind(syllableinitial_df_acc, tdf)
 
     # Create a copy
-    syllableinitial_df <- syllable_initial_df_acc
+    syllableinitial_df <- syllableinitial_df_acc
     syllableinitial_df$G <-str_extract(syllableinitial_df$totalPG, '\\b\\w+$') #CRITICAL! this is needed to include the silent E's as part of the grapheme
 
     # Create all probabilty tables and output them
@@ -298,7 +298,6 @@ compute_syllablemedial_measures <- function(bin_data, syllabemedial_df_acc, bin_
     syllablemedial_list <- list()
     syllablemedial_list[[1]] <- matrix(c("P","G","totalPG"),ncol=3)
 
-    # Iterate through the syllables
     for(i in 1:length(bin_data$STRING)){ 
         #first syllable
         syllable_length <- length(cbind(colnames(bin_data)[c(2:19)][!is.na(bin_data[i,c(2:19)])],
@@ -369,44 +368,51 @@ compute_syllablemedial_measures <- function(bin_data, syllabemedial_df_acc, bin_
 
         syllablemedial_list[[(length(syllablemedial_list)+1)]] <- medial_temp
     }
-    print("here?")
+
     #replace empty matrices with NAs of 1x3 so that they can be bound with the non-empty matrices
     for(i in 1:length(syllablemedial_list)){
         ifelse(all(is.na(syllablemedial_list[[i]])),syllablemedial_list[[i]] <- matrix(NA,nrow=1,ncol=3),syllablemedial_list[[i]]<-syllablemedial_list[[i]])
     }
-    print("after loop.")
-    # Add to the accumulator
-    tdf <- do.call(rbind,syllablemedial_list)
-    print("called")
-    colnames(tdf) <- tdf[1,]
-    tdf <- as.data.frame(tdf[-1,])
-    print("here.")
-    syllablemedial_df_acc <- rbind(syllablemedial_df_acc, tdf)
-    # Compute tables for this bin
-    syllablemedial_df <- syllablemedial_df_acc 
-    syllablemedial_df$G <-str_extract(syllablemedial_df$totalPG, '\\b\\w+$') #CRITICAL! this is needed to include the silent E's as part of the grapheme
 
-    ##syllable medial P->G proportion table (note: will have many zero cells, but that can be removed later for ease of display)
-    syllablemedial_PG_prop <- prop.table(table(syllablemedial_df$P,syllablemedial_df$G),margin=1)
+    tryCatch ({
+        print("after loop.")
+        # Add to the accumulator
+        tdf <- do.call(rbind,syllablemedial_list)
+        print("called")
+        colnames(tdf) <- tdf[1,]
+        tdf <- as.data.frame(tdf[-1,])
+        print("here.")
+        syllablemedial_df_acc <- rbind(syllablemedial_df_acc, tdf)
+        # Compute tables for this bin
+        syllablemedial_df <- syllablemedial_df_acc 
+        syllablemedial_df$G <-str_extract(syllablemedial_df$totalPG, '\\b\\w+$') #CRITICAL! this is needed to include the silent E's as part of the grapheme
 
-    ##syllable medial G->P proportion table (note: will have many zero cells, but that can be removed later for ease of display
-    syllablemedial_GP_prop <- t(prop.table(table(syllablemedial_df$P,syllablemedial_df$G),margin=2))
+        ##syllable medial P->G proportion table (note: will have many zero cells, but that can be removed later for ease of display)
+        syllablemedial_PG_prop <- prop.table(table(syllablemedial_df$P,syllablemedial_df$G),margin=1)
 
-    ##syllable medial FREQ table (note: will have many zero cells, but that can be removed later for ease of display)
-    syllablemedial_FREQ <- t(table(syllablemedial_df$P,syllablemedial_df$G))
+        ##syllable medial G->P proportion table (note: will have many zero cells, but that can be removed later for ease of display
+        syllablemedial_GP_prop <- t(prop.table(table(syllablemedial_df$P,syllablemedial_df$G),margin=2))
 
-    # Output to csvs
-    sbin_identifier <- paste0("tables/bin", bin_index, "_", bin_index + 1)
-    sbin_identifier_csv <- paste0(bin_index, "_", bin_index + 1, ".csv")
+        ##syllable medial FREQ table (note: will have many zero cells, but that can be removed later for ease of display)
+        syllablemedial_FREQ <- t(table(syllablemedial_df$P,syllablemedial_df$G))
 
-    if (!dir.exists(sbin_identifier)) {
-        dir.create(sbin_identifier, recursive=TRUE)
-    }
+        # Output to csvs
+        sbin_identifier <- paste0("tables/bin", bin_index, "_", bin_index + 1)
+        sbin_identifier_csv <- paste0(bin_index, "_", bin_index + 1, ".csv")
 
-    write.csv(syllablemedial_PG_prop, paste0(sbin_identifier, "/syllablemedial_PG_prop", sbin_identifier_csv))
-    write.csv(syllablemedial_GP_prop, paste0(sbin_identifier, "/syllablemedial_GP_prop", sbin_identifier_csv))
-    write.csv(syllablemedial_FREQ, paste0(sbin_identifier, "/syllablemedial_FREQ", sbin_identifier_csv))
-    print("made it out")
+        if (!dir.exists(sbin_identifier)) {
+            dir.create(sbin_identifier, recursive=TRUE)
+        }
+
+        write.csv(syllablemedial_PG_prop, paste0(sbin_identifier, "/syllablemedial_PG_prop", sbin_identifier_csv))
+        write.csv(syllablemedial_GP_prop, paste0(sbin_identifier, "/syllablemedial_GP_prop", sbin_identifier_csv))
+        write.csv(syllablemedial_FREQ, paste0(sbin_identifier, "/syllablemedial_FREQ", sbin_identifier_csv))
+        print("made it out")
+    },
+    error = function(e) {
+        print(paste0("Couldn't do bin ", bin_index))
+    })
+
     return(syllablemedial_df_acc)
 }
 
@@ -476,7 +482,7 @@ for (b in vals) {
     wordinitial_df_acc <- compute_wordinitial_measures(bin_data, wordinitial_df_acc, bin_index)
 
     # Compute syllable initial measures and return the result
-    syllable_initial_df_acc <- compute_syllable_initial_measures(bin_data, syllableinitial_df_acc, bin_index)
+    syllableinitial_df_acc <- compute_syllableinitial_measures(bin_data, syllableinitial_df_acc, bin_index)
 
     # Compute syllable and word final measures and return the results
     finals <- compute_final_measures(bin_data, syllablefinal_df_acc, wordfinal_df_acc, bin_index)
