@@ -179,14 +179,115 @@ compute_syllable_initial_measures <- function(bin_data, syllableinitial_df_acc, 
     }
 
     write.csv(syllableinitial_PG_prop, paste0(sbin_identifier, "/syllableinitial_PG_prop", sbin_identifier_csv))
-    write.csv(syllablefinal_GP_prop, paste0(sbin_identifier, "/syllableinitial_GP_prop", sbin_identifier_csv))
-    write.csv(syllablefinal_FREQ, paste0(sbin_identifier, "/syllableinitial_FREQ", sbin_identifier_csv))
+    write.csv(syllableinitial_GP_prop, paste0(sbin_identifier, "/syllableinitial_GP_prop", sbin_identifier_csv))
+    write.csv(syllableinitial_FREQ, paste0(sbin_identifier, "/syllableinitial_FREQ", sbin_identifier_csv))
 
     # Ultimately return the accumulor with the new data
     return(syllableinitial_df_acc)
 }
 
 # Computes syllable and word final measures and outputs the results to csvs based on the bin.
+# Returns the accumulated wordfinal and syllablefinal accumulators to be stored.
+# Takes in information for the current bin as bin_data, along with accumulated data for syllable and word from all previous bins, and the lower bin index.
+compute_final_measures <- function(bin_data, syllablefinal_df_acc, wordfinal_df_acc, bin_index) {
+    # Initialize empty lists for this bin
+    wordfinal_list <- list()
+    wordfinal_list[[1]] <- matrix(c("P","G","totalPG"),ncol=3)
+
+    syllablefinal_list <- list()
+    syllablefinal_list[[1]] <- matrix(c("P","G","totalPG"),ncol=3)
+
+    ##syllable-final for loop, begins with 1st syllable, appending mappings...then 2nd syllable, etc. before going on to the ith+1 word
+    for(i in 1:length(bin_data$STRING)) { 
+        #first syllable
+        syllable_length1 <- length(cbind(colnames(bin_data)[c(2:19)][!is.na(bin_data[i,c(2:19)])],
+                                        bin_data[i,c(2:19)][!is.na(bin_data[i,c(2:19)])])[-c(1:3),2])
+        #second syllable
+        syllable_length2 <- length(cbind(colnames(bin_data)[c(20:37)][!is.na(bin_data[i,c(20:37)])],
+                                        bin_data[i,c(20:37)][!is.na(bin_data[i,c(20:37)])])[,2])
+        #third syllable
+        syllable_length3 <- length(cbind(colnames(bin_data)[c(38:52)][!is.na(bin_data[i,c(38:52)])],
+                                        bin_data[i,c(38:52)][!is.na(bin_data[i,c(38:52)])])[,2])
+        #fourth syllable
+        syllable_length4 <- length(cbind(colnames(bin_data)[c(53:64)][!is.na(bin_data[i,c(53:64)])],
+                                        bin_data[i,c(53:64)][!is.na(bin_data[i,c(53:64)])])[,2])
+        #fifth syllable
+        syllable_length5 <- length(cbind(colnames(bin_data)[c(65:76)][!is.na(bin_data[i,c(65:76)])],
+                                        bin_data[i,c(65:76)][!is.na(bin_data[i,c(65:76)])])[,2])
+        #sixth syllable
+        syllable_length6 <- length(cbind(colnames(bin_data)[c(77:88)][!is.na(bin_data[i,c(77:88)])],
+                                        bin_data[i,c(77:88)][!is.na(bin_data[i,c(77:88)])])[,2])
+
+        holdword<-rbind(
+        cbind(colnames(bin_data)[c(2:19)][!is.na(bin_data[i,c(2:19)])],
+                                                                    bin_data[i,c(2:19)][!is.na(bin_data[i,c(2:19)])])[-c(1:3),2][(syllable_length1-2):syllable_length1],
+        cbind(colnames(bin_data)[c(20:37)][!is.na(bin_data[i,c(20:37)])],
+                                                                bin_data[i,c(20:37)][!is.na(bin_data[i,c(20:37)])])[,2][(syllable_length2-2):syllable_length2],
+        cbind(colnames(bin_data)[c(38:52)][!is.na(bin_data[i,c(38:52)])],
+                                                                bin_data[i,c(38:52)][!is.na(bin_data[i,c(38:52)])])[,2][(syllable_length3-2):syllable_length3],
+        cbind(colnames(bin_data)[c(53:64)][!is.na(bin_data[i,c(53:64)])],
+                                                                bin_data[i,c(53:64)][!is.na(bin_data[i,c(53:64)])])[,2][(syllable_length4-2):syllable_length4],
+        cbind(colnames(bin_data)[c(65:76)][!is.na(bin_data[i,c(65:76)])],
+                                                                bin_data[i,c(65:76)][!is.na(bin_data[i,c(65:76)])])[,2][(syllable_length5-2):syllable_length5],
+        cbind(colnames(bin_data)[c(77:88)][!is.na(bin_data[i,c(77:88)])],
+                                                                bin_data[i,c(77:88)][!is.na(bin_data[i,c(77:88)])])[,2][(syllable_length6-2):syllable_length6]
+        )
+
+        syllablefinal_list[[length(syllablefinal_list)+1]] <-   as.data.frame(head(holdword,-1)) #pull out non-word-final
+        wordfinal_list[[length(wordfinal_list)+1]] <-   as.data.frame(tail(holdword,1)) #pull out just the word-final                                                 
+    }
+
+    # Syllablefinal: add to the accumulators
+    stdf <- do.call(rbind, syllablefinal_list)
+    colnames(stdf) <- stdf[1,]
+    stdf <- as.data.frame(stdf[-1,])
+    syllablefinal_df_acc <- rbind(syllablefinal_df_acc, stdf)
+
+    # Wordfinal: add to the accumulators
+    wtdf <- do.call(rbind,wordfinal_list)
+    colnames(wtdf) <- wtdf[1,]
+    wtdf <- as.data.frame(wtdf[-1,])
+    wordfinal_df_acc <- rbind(wordfinal_df_acc, wtdf)
+
+    # Compute probabilities
+    syllablefinal_df <- syllablefinal_df_acc
+    syllablefinal_df$G <-str_extract(syllablefinal_df$totalPG, '\\b\\w+$') #CRITICAL! this is needed to include the silent E's as part of the grapheme
+    wordfinal_df <- wordfinal_df_acc
+    wordfinal_df$G <-str_extract(wordfinal_df$totalPG, '\\b\\w+$') #CRITICAL! this is needed to include the silent E's as part of the grapheme
+
+    ##syllable final P->G proportion table (note: will have many zero cells, but that can be removed later for ease of display)
+    syllablefinal_PG_prop <- prop.table(table(syllablefinal_df$P,syllablefinal_df$G),margin=1)
+    ##syllable final G->P proportion table (note: will have many zero cells, but that can be removed later for ease of display
+    syllablefinal_GP_prop <- t(prop.table(table(syllablefinal_df$P,syllablefinal_df$G),margin=2))
+    ##syllable final FREQ table (note: will have many zero cells, but that can be removed later for ease of display)
+    syllablefinal_FREQ <- t(table(syllablefinal_df$P,syllablefinal_df$G))
+
+    ##word final P->G proportion table (note: will have many zero cells, but that can be removed later for ease of display)
+    wordfinal_PG_prop <- prop.table(table(wordfinal_df$P,wordfinal_df$G),margin=1)
+
+    ##word final G->P proportion table (note: will have many zero cells, but that can be removed later for ease of display
+    wordfinal_GP_prop <- t(prop.table(table(wordfinal_df$P,wordfinal_df$G),margin=2))
+
+    ##word final FREQ table (note: will have many zero cells, but that can be removed later for ease of display)
+    wordfinal_FREQ <- t(table(wordfinal_df$P,wordfinal_df$G))
+
+    # Output to csvs
+    sbin_identifier <- paste0("tables/bin", bin_index, "_", bin_index + 1)
+    sbin_identifier_csv <- paste0(bin_index, "_", bin_index + 1, ".csv")
+
+    if (!dir.exists(sbin_identifier)) {
+        dir.create(sbin_identifier, recursive=TRUE)
+    }
+
+    write.csv(syllablefinal_PG_prop, paste0(sbin_identifier, "/syllablefinal_PG_prop", sbin_identifier_csv))
+    write.csv(syllablefinal_GP_prop, paste0(sbin_identifier, "/syllablefinal_GP_prop", sbin_identifier_csv))
+    write.csv(syllablefinal_FREQ, paste0(sbin_identifier, "/syllablefinal_FREQ", sbin_identifier_csv))
+    write.csv(wordfinal_PG_prop, paste0(sbin_identifier, "/wordfinal_PG_prop", sbin_identifier_csv))
+    write.csv(wordfinal_GP_prop, paste0(sbin_identifier, "/wordfinal_GP_prop", sbin_identifier_csv))
+    write.csv(wordfinal_FREQ, paste0(sbin_identifier, "/wordfinal_FREQ", sbin_identifier_csv))
+
+    return(list(syllablefinal_df_acc = syllablefinal_df_acc, wordfinal_df_acc = wordfinal_df_acc))
+}
 
 ###################################
 # Global values used in main loop #
@@ -210,11 +311,11 @@ bin_index <- 1
 # Word-initial data frame
 wordinitial_df_acc <- data.frame(P = character(), G = character(), totalPG = character(), stringsAsFactors = FALSE)
 # Syllable initial data frame
-syllable_initial_df_acc <- data.frame(P = character(), G = character(), totalPG = character(), stringsAsFactors = FALSE)
+syllableinitial_df_acc <- data.frame(P = character(), G = character(), totalPG = character(), stringsAsFactors = FALSE)
 # Syllable final data frame
-syllable_final_df_acc <- data.frame(P = character(), G = character(), totalPG = character(), stringsAsFactors = FALSE)
+syllablefinal_df_acc <- data.frame(P = character(), G = character(), totalPG = character(), stringsAsFactors = FALSE)
 # Word final data frame
-word_final_df_acc <- data.frame(P = character(), G = character(), totalPG = character(), stringsAsFactors = FALSE)
+wordfinal_df_acc <- data.frame(P = character(), G = character(), totalPG = character(), stringsAsFactors = FALSE)
 
 
 
@@ -254,7 +355,10 @@ for (b in vals) {
     # Compute syllable initial measures and return the result
     syllable_initial_df_acc <- compute_syllable_initial_measures(bin_data, syllableinitial_df_acc, bin_index)
 
-
+    # Compute syllable and word final measures and return the results
+    finals <- compute_final_measures(bin_data, syllablefinal_df_acc, wordfinal_df_acc, bin_index)
+    syllablefinal_df_acc <- finals$syllablefinal_df_acc
+    wordfinal_df_acc <- finals$wordfinal_df_acc
 
     ##################################
     ####SYLLABLE-INITIAL MEASURES#####
@@ -276,15 +380,20 @@ for (b in vals) {
 
     # #example of pulling out one P->G mapping odds (just replace the "i" with the IPA symbol for the desired sound#
     # wordinitial_PG_prop[rownames(wordinitial_PG_prop)=="i",][wordinitial_PG_prop[rownames(wordinitial_PG_prop)=="i",]>0]
-
     # #example of pulling out one G->P mapping odds (just replace the "c" with the desired graphemes#
     # wordinitial_GP_prop[rownames(wordinitial_GP_prop)=="c",][wordinitial_GP_prop[rownames(wordinitial_GP_prop)=="c",]>0]
-
     # #example of pulling out one P->G mapping odds (just replace the "i" with the IPA symbol for the desired sound#
     # syllableinitial_PG_prop[rownames(syllableinitial_PG_prop)=="i",][syllableinitial_PG_prop[rownames(syllableinitial_PG_prop)=="i",]>0]
-
     # #example of pulling out one G->P mapping odds (just replace the "c" with the desired graphemes#
     # syllableinitial_GP_prop[rownames(syllableinitial_GP_prop)=="c",][syllableinitial_GP_prop[rownames(syllableinitial_GP_prop)=="c",]>0]
+    # #example of pulling out one P->G mapping odds (just replace the "k" with the IPA symbol for the desired sound#
+    # syllablefinal_PG_prop[rownames(syllablefinal_PG_prop)=="k",][syllablefinal_PG_prop[rownames(syllablefinal_PG_prop)=="k",]>0]
+    # #example of pulling out one G->P mapping odds (just replace the "k" with the desired graphemes#
+    # syllablefinal_GP_prop[rownames(syllablefinal_GP_prop)=="c",][syllablefinal_GP_prop[rownames(syllablefinal_GP_prop)=="c",]>0]
+    # #example of pulling out one P->G mapping odds (just replace the "i" with the IPA symbol for the desired sound#
+    # wordfinal_PG_prop[rownames(wordfinal_PG_prop)=="i",][wordfinal_PG_prop[rownames(wordfinal_PG_prop)=="i",]>0]
+    # #example of pulling out one G->P mapping odds (just replace the "c" with the desired graphemes#
+    # wordfinal_GP_prop[rownames(wordfinal_GP_prop)=="c",][wordfinal_GP_prop[rownames(wordfinal_GP_prop)=="c",]>0]
     
     # Increment index
     bin_index <- bin_index + 1
