@@ -289,6 +289,127 @@ compute_final_measures <- function(bin_data, syllablefinal_df_acc, wordfinal_df_
     return(list(syllablefinal_df_acc = syllablefinal_df_acc, wordfinal_df_acc = wordfinal_df_acc))
 }
 
+# Computes syllable medial measures and outputs the results to csvs based on the bin.
+# Returns accumulated syllablemedial accumulator to be stored.
+# Takes in information for the current bin as bin_data, along with accumulated data for syllablemedial position from all previous bins, and the lower bin index.
+compute_syllablemedial_measures <- function(bin_data, syllabemedial_df_acc, bin_index) {
+    print("made it here")
+    # Empty list for the current bin
+    syllablemedial_list <- list()
+    syllablemedial_list[[1]] <- matrix(c("P","G","totalPG"),ncol=3)
+
+    # Iterate through the syllables
+    for(i in 1:length(bin_data$STRING)){ 
+        #first syllable
+        syllable_length <- length(cbind(colnames(bin_data)[c(2:19)][!is.na(bin_data[i,c(2:19)])],
+                                        bin_data[i,c(2:19)][!is.na(bin_data[i,c(2:19)])])[-c(1:3),2])
+        myncol <- ifelse(syllable_length <=6, 1, (syllable_length-3)/3)
+
+
+        medial_temp<- t(matrix(tryCatch(
+        cbind(colnames(bin_data)[c(2:19)][!is.na(bin_data[i,c(2:19)])],bin_data[i,c(2:19)][!is.na(bin_data[i,c(2:19)])])[-c(1:3),2][((syllable_length-3)%%1):(syllable_length-3)],
+        error=function(err) NA),ncol=myncol))
+
+
+        syllablemedial_list[[(length(syllablemedial_list)+1)]] <- medial_temp
+
+        #second syllable
+        syllable_length <- length(cbind(colnames(bin_data)[c(20:37)][!is.na(bin_data[i,c(20:37)])],
+                                        bin_data[i,c(20:37)][!is.na(bin_data[i,c(20:37)])])[-c(1:3),2])
+        myncol <- ifelse(syllable_length <=6, 1, (syllable_length-3)/3)
+
+        medial_temp<- t(matrix(tryCatch(
+        cbind(colnames(bin_data)[c(20:37)][!is.na(bin_data[i,c(20:37)])],bin_data[i,c(20:37)][!is.na(bin_data[i,c(20:37)])])[-c(1:3),2][((syllable_length-3)%%1):(syllable_length-3)],
+        error=function(err) NA),ncol=myncol))
+
+
+        syllablemedial_list[[(length(syllablemedial_list)+1)]] <- medial_temp
+
+        #third syllable
+        syllable_length <- length(cbind(colnames(bin_data)[c(38:52)][!is.na(bin_data[i,c(38:52)])],
+                                        bin_data[i,c(38:52)][!is.na(bin_data[i,c(38:52)])])[-c(1:3),2])
+        myncol <- ifelse(syllable_length <=6, 1, (syllable_length-3)/3)
+
+        medial_temp<- t(matrix(tryCatch(
+        cbind(colnames(bin_data)[c(38:52)][!is.na(bin_data[i,c(38:52)])],bin_data[i,c(38:52)][!is.na(bin_data[i,c(38:52)])])[-c(1:3),2][((syllable_length-3)%%1):(syllable_length-3)],
+        error=function(err) NA),ncol=myncol))
+
+        syllablemedial_list[[(length(syllablemedial_list)+1)]] <- medial_temp
+
+        #fourth syllable
+        syllable_length <- length(cbind(colnames(bin_data)[c(53:64)][!is.na(bin_data[i,c(53:64)])],
+                                        bin_data[i,c(53:64)][!is.na(bin_data[i,c(53:64)])])[-c(1:3),2])
+        myncol <- ifelse(syllable_length <=6, 1, (syllable_length-3)/3)
+
+        medial_temp<- t(matrix(tryCatch(
+        cbind(colnames(bin_data)[c(53:64)][!is.na(bin_data[i,c(53:64)])],bin_data[i,c(53:64)][!is.na(bin_data[i,c(53:64)])])[-c(1:3),2][((syllable_length-3)%%1):(syllable_length-3)],
+        error=function(err) NA),ncol=myncol))
+
+        syllablemedial_list[[(length(syllablemedial_list)+1)]] <- medial_temp
+
+        #fifth syllable
+        syllable_length <- length(cbind(colnames(bin_data)[c(65:76)][!is.na(bin_data[i,c(65:76)])],
+                                        bin_data[i,c(65:76)][!is.na(bin_data[i,c(65:76)])])[-c(1:3),2])
+        myncol <- ifelse(syllable_length <=6, 1, (syllable_length-3)/3)
+
+        medial_temp<- t(matrix(tryCatch(
+        cbind(colnames(bin_data)[c(65:76)][!is.na(bin_data[i,c(65:76)])],bin_data[i,c(65:76)][!is.na(bin_data[i,c(65:76)])])[-c(1:3),2][((syllable_length-3)%%1):(syllable_length-3)],
+        error=function(err) NA),ncol=myncol))
+
+        syllablemedial_list[[(length(syllablemedial_list)+1)]] <- medial_temp
+
+        #sixth syllable
+        syllable_length <- length(cbind(colnames(bin_data)[c(77:88)][!is.na(bin_data[i,c(77:88)])],
+                                        bin_data[i,c(77:88)][!is.na(bin_data[i,c(77:88)])])[-c(1:3),2])
+        myncol <- ifelse(syllable_length <=6, 1, (syllable_length-3)/3)
+
+        medial_temp<- t(matrix(tryCatch(
+        cbind(colnames(bin_data)[c(77:88)][!is.na(bin_data[i,c(77:88)])],bin_data[i,c(77:88)][!is.na(bin_data[i,c(77:88)])])[-c(1:3),2][((syllable_length-3)%%1):(syllable_length-3)],
+        error=function(err) NA),ncol=myncol))
+
+        syllablemedial_list[[(length(syllablemedial_list)+1)]] <- medial_temp
+    }
+    print("here?")
+    #replace empty matrices with NAs of 1x3 so that they can be bound with the non-empty matrices
+    for(i in 1:length(syllablemedial_list)){
+        ifelse(all(is.na(syllablemedial_list[[i]])),syllablemedial_list[[i]] <- matrix(NA,nrow=1,ncol=3),syllablemedial_list[[i]]<-syllablemedial_list[[i]])
+    }
+    print("after loop.")
+    # Add to the accumulator
+    tdf <- do.call(rbind,syllablemedial_list)
+    print("called")
+    colnames(tdf) <- tdf[1,]
+    tdf <- as.data.frame(tdf[-1,])
+    print("here.")
+    syllablemedial_df_acc <- rbind(syllablemedial_df_acc, tdf)
+    # Compute tables for this bin
+    syllablemedial_df <- syllablemedial_df_acc 
+    syllablemedial_df$G <-str_extract(syllablemedial_df$totalPG, '\\b\\w+$') #CRITICAL! this is needed to include the silent E's as part of the grapheme
+
+    ##syllable medial P->G proportion table (note: will have many zero cells, but that can be removed later for ease of display)
+    syllablemedial_PG_prop <- prop.table(table(syllablemedial_df$P,syllablemedial_df$G),margin=1)
+
+    ##syllable medial G->P proportion table (note: will have many zero cells, but that can be removed later for ease of display
+    syllablemedial_GP_prop <- t(prop.table(table(syllablemedial_df$P,syllablemedial_df$G),margin=2))
+
+    ##syllable medial FREQ table (note: will have many zero cells, but that can be removed later for ease of display)
+    syllablemedial_FREQ <- t(table(syllablemedial_df$P,syllablemedial_df$G))
+
+    # Output to csvs
+    sbin_identifier <- paste0("tables/bin", bin_index, "_", bin_index + 1)
+    sbin_identifier_csv <- paste0(bin_index, "_", bin_index + 1, ".csv")
+
+    if (!dir.exists(sbin_identifier)) {
+        dir.create(sbin_identifier, recursive=TRUE)
+    }
+
+    write.csv(syllablemedial_PG_prop, paste0(sbin_identifier, "/syllablemedial_PG_prop", sbin_identifier_csv))
+    write.csv(syllablemedial_GP_prop, paste0(sbin_identifier, "/syllablemedial_GP_prop", sbin_identifier_csv))
+    write.csv(syllablemedial_FREQ, paste0(sbin_identifier, "/syllablemedial_FREQ", sbin_identifier_csv))
+    print("made it out")
+    return(syllablemedial_df_acc)
+}
+
 ###################################
 # Global values used in main loop #
 ###################################
@@ -312,6 +433,8 @@ bin_index <- 1
 wordinitial_df_acc <- data.frame(P = character(), G = character(), totalPG = character(), stringsAsFactors = FALSE)
 # Syllable initial data frame
 syllableinitial_df_acc <- data.frame(P = character(), G = character(), totalPG = character(), stringsAsFactors = FALSE)
+# Syllable medial data frame
+syllablemedial_df_acc <- data.frame(P = character(), G = character(), totalPG = character(), stringsAsFactors = FALSE)
 # Syllable final data frame
 syllablefinal_df_acc <- data.frame(P = character(), G = character(), totalPG = character(), stringsAsFactors = FALSE)
 # Word final data frame
@@ -359,14 +482,7 @@ for (b in vals) {
     finals <- compute_final_measures(bin_data, syllablefinal_df_acc, wordfinal_df_acc, bin_index)
     syllablefinal_df_acc <- finals$syllablefinal_df_acc
     wordfinal_df_acc <- finals$wordfinal_df_acc
-
-    ##################################
-    ####SYLLABLE-INITIAL MEASURES#####
-    ##################################
-
-    # Empty list for current bin data
-    syllableinitial_list <- list()
-    syllableinitial_list[[1]] <- matrix(c("P","G","totalPG"),ncol=3)
+    syllablemedial_df_acc <- compute_syllablemedial_measures(bin_data, syllablemedial_df_acc, bin_index)
 
     ##syllable-initial for loop for the SECOND through SIXTH syllables only!:
     ##special note: must exclude WORD-FINAL mappings, they will be treated as word final even if they are also syllable-initial (e.g, the Y in joe-Y)
@@ -392,9 +508,16 @@ for (b in vals) {
     # syllablefinal_GP_prop[rownames(syllablefinal_GP_prop)=="c",][syllablefinal_GP_prop[rownames(syllablefinal_GP_prop)=="c",]>0]
     # #example of pulling out one P->G mapping odds (just replace the "i" with the IPA symbol for the desired sound#
     # wordfinal_PG_prop[rownames(wordfinal_PG_prop)=="i",][wordfinal_PG_prop[rownames(wordfinal_PG_prop)=="i",]>0]
+    # # #example of pulling out one G->P mapping odds (just replace the "c" with the desired graphemes#
+    # # wordfinal_GP_prop[rownames(wordfinal_GP_prop)=="c",][wordfinal_GP_prop[rownames(wordfinal_GP_prop)=="c",]>0]
+    # #example of pulling out one P->G mapping odds (just replace the "i" with the IPA symbol for the desired sound#
+    # syllablemedial_PG_prop[rownames(syllablemedial_PG_prop)=="i",][syllablemedial_PG_prop[rownames(syllablemedial_PG_prop)=="i",]>0]
+
     # #example of pulling out one G->P mapping odds (just replace the "c" with the desired graphemes#
-    # wordfinal_GP_prop[rownames(wordfinal_GP_prop)=="c",][wordfinal_GP_prop[rownames(wordfinal_GP_prop)=="c",]>0]
+    # syllablemedial_GP_prop[rownames(syllablemedial_GP_prop)=="c",][syllablemedial_GP_prop[rownames(syllablemedial_GP_prop)=="c",]>0]
     
     # Increment index
     bin_index <- bin_index + 1
 }
+
+# Miscording part omitted. Can be added later if desired to the individual functions.
