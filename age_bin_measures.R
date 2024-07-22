@@ -410,7 +410,7 @@ compute_syllablemedial_measures <- function(bin_data, syllabemedial_df_acc, bin_
         print("made it out")
     },
     error = function(e) {
-        print(paste0("Couldn't do bin ", bin_index))
+        print(paste0("Couldn't do bin ", bin_index, " in syllable medial"))
     })
 
     return(syllablemedial_df_acc)
@@ -428,7 +428,8 @@ forR_input <- mutate_all(forR_input,.funs=tolower)
 
 # This is the input that needs to be changed get each age bin individually
 # Need to mkke this process iterative (reduce unnecessary computation/duplocate computation)
-vals <- c("(1,2]", "(2,3]", "(3,4]", "(4,5]", "(5,6]", "(6,7]", "(7,8]", "(8,9]", "(9,10]", "(10,11]", "(11,12]", "(12,13]", "(13,14]", "(14,15]", "(15,16]", "(16,17]") # add bin for every iteration of AoA
+# vals <- c("(1,2]", "(2,3]", "(3,4]", "(4,5]", "(5,6]", "(6,7]", "(7,8]", "(8,9]", "(9,10]", "(10,11]", "(11,12]", "(12,13]", "(13,14]", "(14,15]", "(15,16]", "(16,17]") # add bin for every iteration of AoA
+vals <- c("(1,2]", "(2,3]")
 
 # Used for naming; indicates lower bound of age bin (i.e. 1 means bin (1,2])
 bin_index <- 1
