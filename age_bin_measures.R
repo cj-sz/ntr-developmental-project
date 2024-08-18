@@ -292,22 +292,46 @@ compute_final_measures <- function(bin_data, syllablefinal_df_acc, wordfinal_df_
 # Computes syllable medial measures and outputs the results to csvs based on the bin.
 # Returns accumulated syllablemedial accumulator to be stored.
 # Takes in information for the current bin as bin_data, along with accumulated data for syllablemedial position from all previous bins, and the lower bin index.
-compute_syllablemedial_measures <- function(bin_data, syllabemedial_df_acc, bin_index) {
-    print("made it here")
+compute_syllablemedial_measures <- function(bin_data, syllablemedial_df_acc, bin_index) {
+    print("BEGIN SYLLABLE MEDIAL MEASURE COMPUTATION")
     # Empty list for the current bin
     syllablemedial_list <- list()
-    syllablemedial_list[[1]] <- matrix(c("P","G","totalPG"),ncol=3)
-
+    syllablemedial_list[[1]] <- matrix(c("P", "G", "totalPG"), ncol = 3)
+    write.csv(x = syllablemedial_df_acc, file = paste0("smdfacc", bin_index, ".csv"))
+    write.csv(x = bin_data, file = paste0("bindata", bin_index, ".csv"))
+    print("bin index")
+    print(bin_index)
+    print("hjere?")
+    print("syllablemedial_list init")
+    print(syllablemedial_list)
+    print("current accumulated syllablemedial df")
+    print(syllablemedial_df_acc)
+    print("begin loop")
+    # seems to happen with words like turtle, where there's a medial phoneme with no corresponding grapheme (final e sound in turtle, # 176 as an example) also 162 table. 109 little 30 bottle 21 bicycle 7 apple
+    # is there a convention for handling this? idk if remember how
     for(i in 1:length(bin_data$STRING)){ 
-        #first syllable
-        syllable_length <- length(cbind(colnames(bin_data)[c(2:19)][!is.na(bin_data[i,c(2:19)])],
-                                        bin_data[i,c(2:19)][!is.na(bin_data[i,c(2:19)])])[-c(1:3),2])
+        print(paste0("iteration: ", i))
+        # first syllable
+        syllable_length <- length(cbind(
+            colnames(bin_data)[c(2:19)][!is.na(bin_data[i, c(2:19)])],
+            bin_data[i, c(2:19)][!is.na(bin_data[i, c(2:19)])]
+        )[-c(1:3), 2])
+        # print(syllable_length)
         myncol <- ifelse(syllable_length <=6, 1, (syllable_length-3)/3)
 
 
-        medial_temp<- t(matrix(tryCatch(
-        cbind(colnames(bin_data)[c(2:19)][!is.na(bin_data[i,c(2:19)])],bin_data[i,c(2:19)][!is.na(bin_data[i,c(2:19)])])[-c(1:3),2][((syllable_length-3)%%1):(syllable_length-3)],
-        error=function(err) NA),ncol=myncol))
+        medial_temp <- t(matrix(tryCatch(
+            cbind(colnames(bin_data)[c(2:19)][!is.na(bin_data[i, c(2:19)])], bin_data[i, c(2:19)][!is.na(bin_data[i, c(2:19)])])[-c(1:3), 2][((syllable_length - 3) %% 1):(syllable_length - 3)],
+            error = function(err) NA
+        ), ncol = myncol))
+        # print(myncol)
+        # print(medial_temp)
+
+        if (ncol(medial_temp) == 2) {
+            print("issue found.")
+            print(paste0("iter: ", i))
+            print(medial_temp)
+        }
 
 
         syllablemedial_list[[(length(syllablemedial_list)+1)]] <- medial_temp
@@ -320,8 +344,11 @@ compute_syllablemedial_measures <- function(bin_data, syllabemedial_df_acc, bin_
         medial_temp<- t(matrix(tryCatch(
         cbind(colnames(bin_data)[c(20:37)][!is.na(bin_data[i,c(20:37)])],bin_data[i,c(20:37)][!is.na(bin_data[i,c(20:37)])])[-c(1:3),2][((syllable_length-3)%%1):(syllable_length-3)],
         error=function(err) NA),ncol=myncol))
-
-
+        if (ncol(medial_temp) == 2) {
+            print("issue found.")
+            print(paste0("iter: ", i))
+            print(medial_temp)
+        }
         syllablemedial_list[[(length(syllablemedial_list)+1)]] <- medial_temp
 
         #third syllable
@@ -332,7 +359,11 @@ compute_syllablemedial_measures <- function(bin_data, syllabemedial_df_acc, bin_
         medial_temp<- t(matrix(tryCatch(
         cbind(colnames(bin_data)[c(38:52)][!is.na(bin_data[i,c(38:52)])],bin_data[i,c(38:52)][!is.na(bin_data[i,c(38:52)])])[-c(1:3),2][((syllable_length-3)%%1):(syllable_length-3)],
         error=function(err) NA),ncol=myncol))
-
+        if (ncol(medial_temp) == 2) {
+            print("issue found.")
+            print(paste0("iter: ", i))
+            print(medial_temp)
+        }
         syllablemedial_list[[(length(syllablemedial_list)+1)]] <- medial_temp
 
         #fourth syllable
@@ -343,7 +374,11 @@ compute_syllablemedial_measures <- function(bin_data, syllabemedial_df_acc, bin_
         medial_temp<- t(matrix(tryCatch(
         cbind(colnames(bin_data)[c(53:64)][!is.na(bin_data[i,c(53:64)])],bin_data[i,c(53:64)][!is.na(bin_data[i,c(53:64)])])[-c(1:3),2][((syllable_length-3)%%1):(syllable_length-3)],
         error=function(err) NA),ncol=myncol))
-
+        if (ncol(medial_temp) == 2) {
+            print("issue found.")
+            print(paste0("iter: ", i))
+            print(medial_temp)
+        }
         syllablemedial_list[[(length(syllablemedial_list)+1)]] <- medial_temp
 
         #fifth syllable
@@ -354,7 +389,11 @@ compute_syllablemedial_measures <- function(bin_data, syllabemedial_df_acc, bin_
         medial_temp<- t(matrix(tryCatch(
         cbind(colnames(bin_data)[c(65:76)][!is.na(bin_data[i,c(65:76)])],bin_data[i,c(65:76)][!is.na(bin_data[i,c(65:76)])])[-c(1:3),2][((syllable_length-3)%%1):(syllable_length-3)],
         error=function(err) NA),ncol=myncol))
-
+        if (ncol(medial_temp) == 2) {
+            print("issue found.")
+            print(paste0("iter: ", i))
+            print(medial_temp)
+        }
         syllablemedial_list[[(length(syllablemedial_list)+1)]] <- medial_temp
 
         #sixth syllable
@@ -365,8 +404,14 @@ compute_syllablemedial_measures <- function(bin_data, syllabemedial_df_acc, bin_
         medial_temp<- t(matrix(tryCatch(
         cbind(colnames(bin_data)[c(77:88)][!is.na(bin_data[i,c(77:88)])],bin_data[i,c(77:88)][!is.na(bin_data[i,c(77:88)])])[-c(1:3),2][((syllable_length-3)%%1):(syllable_length-3)],
         error=function(err) NA),ncol=myncol))
-
-        syllablemedial_list[[(length(syllablemedial_list)+1)]] <- medial_temp
+        if (ncol(medial_temp) == 2) {
+            print("issue found.")
+            print(paste0("iter: ", i))
+            print(medial_temp)
+        }
+        syllablemedial_list[[(length(syllablemedial_list) + 1)]] <- medial_temp
+        # print("syllablemedial_list after iteration")
+        # print(syllablemedial_list)
     }
 
     #replace empty matrices with NAs of 1x3 so that they can be bound with the non-empty matrices
@@ -376,7 +421,11 @@ compute_syllablemedial_measures <- function(bin_data, syllabemedial_df_acc, bin_
 
     tryCatch ({
         print("after loop.")
+        return()
         # Add to the accumulator
+        print(syllablemedial_list)
+        # IF MEDIALS ARE FOUND THERE ARE ONLY TWO COLUMNS!!! THUS THE CALL FAILS
+        # BECAUSE IT TRIES TO BIND ROWS THAT DONT HAVE THE SAME NUMBER OF COLUMNS
         tdf <- do.call(rbind,syllablemedial_list)
         print("called")
         colnames(tdf) <- tdf[1,]
@@ -400,8 +449,15 @@ compute_syllablemedial_measures <- function(bin_data, syllabemedial_df_acc, bin_
         sbin_identifier <- paste0("tables/bin", bin_index, "_", bin_index + 1)
         sbin_identifier_csv <- paste0(bin_index, "_", bin_index + 1, ".csv")
 
+        # writing all temp outputs for error check
+        print("writing?")
+        write.csv(syllablemedial_df, "temp_medial.csv")
+        write.csv(syllablemedial_PG_prop, "temp_medial_pg.csv")
+        write.csv(syllablemedial_GP_prop, "temp_medial_gp.csv")
+        write.csv(syllablemedial_FREQ, "temp_medial_freq.csv")
+
         if (!dir.exists(sbin_identifier)) {
-            dir.create(sbin_identifier, recursive=TRUE)
+            dir.create(sbin_identifier, recursive = TRUE)
         }
 
         write.csv(syllablemedial_PG_prop, paste0(sbin_identifier, "/syllablemedial_PG_prop", sbin_identifier_csv))
@@ -430,6 +486,7 @@ forR_input <- mutate_all(forR_input,.funs=tolower)
 # Need to mkke this process iterative (reduce unnecessary computation/duplocate computation)
 # vals <- c("(1,2]", "(2,3]", "(3,4]", "(4,5]", "(5,6]", "(6,7]", "(7,8]", "(8,9]", "(9,10]", "(10,11]", "(11,12]", "(12,13]", "(13,14]", "(14,15]", "(15,16]", "(16,17]") # add bin for every iteration of AoA
 vals <- c("(1,2]", "(2,3]")
+# vals <- c("(1,2]")
 
 # Used for naming; indicates lower bound of age bin (i.e. 1 means bin (1,2])
 bin_index <- 1
@@ -489,7 +546,12 @@ for (b in vals) {
     finals <- compute_final_measures(bin_data, syllablefinal_df_acc, wordfinal_df_acc, bin_index)
     syllablefinal_df_acc <- finals$syllablefinal_df_acc
     wordfinal_df_acc <- finals$wordfinal_df_acc
+    print("here")
     syllablemedial_df_acc <- compute_syllablemedial_measures(bin_data, syllablemedial_df_acc, bin_index)
+
+    write.csv(syllableinitial_df_acc, "RUN1initial.csv")
+    write.csv(syllablefinal_df_acc, "RUN1final.csv")
+    write.csv(syllablemedial_df_acc, "RUN1medial.csv")
 
     ##syllable-initial for loop for the SECOND through SIXTH syllables only!:
     ##special note: must exclude WORD-FINAL mappings, they will be treated as word final even if they are also syllable-initial (e.g, the Y in joe-Y)
